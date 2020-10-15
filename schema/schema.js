@@ -89,7 +89,7 @@ const Mutation = new GraphQLObjectType({
         description: { type: new GraphQLNonNull(GraphQLString) },
         image: { type: new GraphQLNonNull(GraphQLString) },
         price: { type: new GraphQLNonNull(GraphQLFloat) },
-        category: { type: new GraphQLNonNull(GraphQLString) },
+        category: { type: new GraphQLList(GraphQLString) },
       },
       resolve (parent, args) {
         const { name, brandName, description, image, price } = args;
@@ -106,7 +106,7 @@ const Mutation = new GraphQLObjectType({
           description: { type: new GraphQLNonNull(GraphQLString) },
           image: { type: new GraphQLNonNull(GraphQLString) },
           price: { type: new GraphQLNonNull(GraphQLFloat) },
-          category: { type: new GraphQLNonNull(GraphQLString)},
+          category: { type: new GraphQLList(GraphQLString)},
       },
       resolve(parent, args){
           return new Promise((resolve, reject) => {
