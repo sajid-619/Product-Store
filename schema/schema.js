@@ -3,6 +3,8 @@ const graphql = require('graphql');
 const Product = require('../models/product');
 const Category = require('../models/category');
 
+const { buildSchema } = require('graphql');
+
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -37,13 +39,7 @@ const CategoryType = new GraphQLObjectType({
   fields: () => ({
       _id: { type: GraphQLString },
       name: { type: GraphQLString },
-      products: {
-        type: new GraphQLList(ProductType),
-        resolve (parent, args) {
-          return Product.find({ categoryId: parent._id});
-        }
-      }
-  })
+      })
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -85,6 +81,63 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
+    addProduct: {
+      type: ProductType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        brandName: { type: new GraphQLNonNull(GraphQLString) },
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        image: { type: new GraphQLNonNull(GraphQLString) },
+        price: { type: new GraphQLNonNull(GraphQLFloat) },
+        category: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve (parent, args) {
+        const { name, brandName, description, image, price } = args;
+        const product = new Product({ name, brandName, description, image, price, categoryId });
+        return product.save();
+      }
+    },
+    updateProduct: {
+      type: ProductType,
+      args: {
+          _id: {type: new GraphQLNonNull(GraphQLString)},
+          name: {type: new GraphQLNonNull(GraphQLString)},
+          brandName: { type: new GraphQLNonNull(GraphQLString) },
+          description: { type: new GraphQLNonNull(GraphQLString) },
+          image: { type: new GraphQLNonNull(GraphQLString) },
+          price: { type: new GraphQLNonNull(GraphQLFloat) },
+          category: { type: new GraphQLNonNull(GraphQLString)},
+      },
+      resolve(parent, args){
+          return new Promise((resolve, reject) => {
+              const date = Date().toString()
+              Product.findOneAndUpdate(
+                  {"_id": args._id},
+                  { "name":{name: args.name, dateUpdated: date}},
+                  { "brand":{brandName: args.brandName, dateUpdated: date}},
+                  { "description":{description: args.description, dateUpdated: date}},
+                  { "image":{image: args.image, dateUpdated: date}},
+                  { "price":{price: args.price, dateUpdated: date}},
+                  { "price":{price: args.price, dateUpdated: date}},
+                  { "category":{category: args.categoryId, dateUpdated: date}},
+                  {"new": true}
+              ).exec((err, res) => {
+                  console.log('test', res)
+                  if(err) reject(err)
+                  else resolve(res)
+              })
+          })
+      }
+    },
+    deleteProduct: {
+      type: ProductType,
+      args: {
+          _id: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve (parent, args) {
+          return Product.findByIdAndDelete(args._id)
+      }
+    },
     addCategory: {
       type: CategoryType,
       args: {
@@ -96,31 +149,37 @@ const Mutation = new GraphQLObjectType({
         return category.save();
       }
     },
-    addProduct: {
-      type: ProductType,
+    updateCategory: {
+      type: CategoryType,
       args: {
-        name: { type: new GraphQLNonNull(GraphQLString) },
-        brandName: { type: new GraphQLNonNull(GraphQLString) },
-        description: { type: new GraphQLNonNull(GraphQLString) },
-        image: { type: new GraphQLNonNull(GraphQLString) },
-        price: { type: new GraphQLNonNull(GraphQLFloat) },
-        categoryId: { type: new GraphQLNonNull(GraphQLID) },
+          _id: {type: new GraphQLNonNull(GraphQLString)},
+          name: {type: new GraphQLNonNull(GraphQLString)},
+          
       },
-      resolve (parent, args) {
-        const { name, brandName, description, image, price } = args;
-        const product = new Book({ name, brandName, description, image, price, categoryId });
-        return product.save();
+      resolve(parent, args){
+          return new Promise((resolve, reject) => {
+              const date = Date().toString()
+              Category.findOneAndUpdate(
+                  {"_id": args._id},
+                  { "name":{name: args.name, dateUpdated: date}},
+                  {"new": true} //returns new document
+              ).exec((err, res) => {
+                  console.log('test', res)
+                  if(err) reject(err)
+                  else resolve(res)
+              })
+          })
       }
     },
-    deleteProduct: {
-      type: ProductType,
+    deleteCategory: {
+      type: CategoryType,
       args: {
           _id: { type: new GraphQLNonNull(GraphQLString) }
       },
       resolve (parent, args) {
-          return Product.findByIdAndDelete(args._id)
+          return Category.findByIdAndDelete(args._id)
       }
-  }
+    }
   }
 });
 
