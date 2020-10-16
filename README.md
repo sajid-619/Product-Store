@@ -4,7 +4,7 @@
 
 Go to the server folder and in the command prompt type the command given below
 
-nodemon app.js
+npx nodemon app.js
 
 ##Run Mongod##
 
